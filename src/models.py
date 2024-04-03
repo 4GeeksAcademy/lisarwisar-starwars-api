@@ -9,9 +9,17 @@ class User(db.Model):
     name = db.Column(db.String(250), nullable=False)
     password = db.Column(db.String(250), nullable=False)
 
+    def serialize(self):
+        return{
+            "id": self.id,
+            "email": self.email,
+            "name": self.name,
+        }
+
 class Characters(db.Model):
     __tablename__ = "characters"
-    name = db.Column(db.String(250), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True)
     birth_year = db.Column(db.String(250), nullable=False)
     eye_color = db.Column(db.String(250), nullable=False)
     gender = db.Column(db.String(250), nullable=False)
@@ -19,9 +27,22 @@ class Characters(db.Model):
     mass = db.Column(db.String(250), nullable=False)
     skin_color = db.Column(db.String(250), nullable=False)
 
+    def serialize(self):
+        return{
+            "id": self.id,
+            "name": self.name,
+            "birth_year": self.birth_year,
+            "eye_color": self.eye_color,
+            "gender": self.gender,
+            "height": self.height,
+            "mass": self.mass,
+            "skin_color": self.skin_color
+        }
+
 class Planets(db.Model):
     __tablename__ = "planets"
-    name = db.Column(db.String(250), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(250), unique=True)
     diameter = db.Column(db.String(250), nullable=False)
     rotation_period = db.Column(db.String(250), nullable=False)
     orbital_period = db.Column(db.String(250), nullable=False)
@@ -33,18 +54,44 @@ class Planets(db.Model):
     residents = db.Column(db.String(250), nullable=False)
     films = db.Column(db.String(250), nullable=False)
 
-class Items(db.Model):
-    __tablename__ = "items"
-    item_id = db.Column(db.Integer, primary_key=True)
+    def serialize(self):
+        return{
+            "id": self.id,
+            "name": self.name,
+            "diameter": self.diameter,
+            "rotation_period": self.rotation_period,
+            "orbital_period": self.rotation_period,
+            "gravity": self.gravity,
+            "population": self.population,
+            "climate": self.climate,
+            "terrain": self.terrain,
+            "surface_water": self.surface_water,
+            "residents": self.residents,
+            "films": self.films
+        }
 
 class Favorite_Characters(db.Model):
     __tablename__ = "favorite_characters"
-    user_character_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    character_name = db.Column(db.String(250), db.ForeignKey("characters.name"))
+    character_id = db.Column(db.String(250), db.ForeignKey("characters.id"))
+
+    def serialize(self):
+        return{
+            "id": self.id,
+            "user_id": self.user_id,
+            "character_id": self.character_id
+        }
 
 class Favorite_Planets(db.Model):
     __tablename__ = "favorite_planets"
-    user_planer_id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
-    planet_name = db.Column(db.String(250), db.ForeignKey("planets.name"))
+    planet_id = db.Column(db.String(250), db.ForeignKey("planets.id"))
+
+    def serialize(self):
+        return{
+            "id": self.id,
+            "user_id": self.user_id,
+            "planet_id": self.planet_id
+        }
