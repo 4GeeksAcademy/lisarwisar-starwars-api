@@ -37,20 +37,41 @@ def sitemap():
     return generate_sitemap(app)
 
 @app.route("/people", methods=["GET"])
+def get_all_characters():
+    characters = Characters.query.all()
+    characters = list(map(lambda character: character.serialize(), characters))
+
+    return jsonify({"characters": characters}), 200
+
+@app.route("people/<int:people_id>")
+def get_single_character(people_id):
+    character = Characters.query.filter_by(id=people_id).first()
+    if character is not None:
+        return jsonify(character.serialize()),200
+    else:
+        return jsonify({"error":"character no found"}),404
+
+@app.route("/planets", methods=["GET"])
+def get_all_planets():
+    planets = Planets.query.all()
+    planets = list(map(lambda planet: planet.serialize(), planets))
+
+    return jsonify({"planets": planets}), 200
+
+@app.route("planets/<int:planet_id>")
+def get_single_planet(planet_id):
+    planet = Planets.query.filter_by(id=planet_id).first()
+    if planet is not None:
+        return jsonify(planet.serialize()),200
+    else:
+        return jsonify({"error":"planet no found"}),404
+
+@app.route("/users", methods=["GET"])
 def get_all_users():
     users = User.query.all()
     users = list(map(lambda user: user.serialize(), users))
 
-    return jsonify({"users": users}), 200
-
-@app.route("people/<int:people_id>")
-def get_single_user(people_id):
-    user = User.query.filter_by(id=people_id).first()
-    if user is not None:
-        return jsonify(user.serialize()),200
-    else:
-        return jsonify({"error":"user no found"}),404
-
+    return jsonify({"users": users}), 200       
 
 
 @app.route('/user', methods=['GET'])
