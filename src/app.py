@@ -43,7 +43,14 @@ def get_all_users():
 
     return jsonify({"users": users}), 200
 
-@app.route()
+@app.route("people/<int:people_id>")
+def get_single_user(people_id):
+    user = User.query.filter_by(id=people_id).first()
+    if user is not None:
+        return jsonify(user.serialize()),200
+    else:
+        return jsonify({"error":"user no found"}),404
+
 
 
 @app.route('/user', methods=['GET'])
