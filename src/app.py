@@ -71,17 +71,72 @@ def get_all_users():
     users = User.query.all()
     users = list(map(lambda user: user.serialize(), users))
 
-    return jsonify({"users": users}), 200       
+    return jsonify({"users": users}), 200 
+
+@app.route("users/favorites", methods=["GET"])
+def get_user_favorites():
+    user_id = request.json.get("user_id")
+
+    favorite_planets = Favorite_Planets.query.filter_by(id=user_id)
+    favorite_planets = list(map(lambda planet: planet.serialize(), favorite_planets))
+
+    favorite_characters = Favorite_Characters.query.filter_by(id=user_id)
+    favorite_characters = list(map(lambda character: character.serialize(), favorite_characters))
+
+    return jsonify({
+        "planets": favorite_planets,
+        "characters": favorite_characters
+    }),200
+
+@app.route("/favorite/planet/<int:planet_id>", methods=["POST"])
+def add_favorite_planet(planet_id):
+
+    favorite_planet = Favorite_Planets()
+    favorite_planet.user_id = request.json.get("user_id")
+    favorite_planet.planet_id = planet_id
+
+    db.session.add(favorite_planet)
+    db.session.commit()
+
+    return jsonify({
+      "msg": "Planet added to favorites",
+      "status": "ok"}
+    ), 201
+
+@app.route("/favorite/people/<int:people_id>", methods=["POST"])
+def add_favorite_character(people_id):
+
+    favorite_character = Favorite_Characters()
+    favorite_character.user_id = request.json.get("user_id")
+    favorite_character.character_id_id = people_id
+
+    db.session.add(favorite_character)
+    db.session.commit()
+
+    return jsonify({
+      "msg": "Character added to favorites",
+      "status": "ok"}
+    ), 201
+
+@app.route("/favorite/planet/<int:planet_id>", method=["DELETE"])
+def delete_favorite_planet(planet_id):
+    planet_to_delete = Favorite_Planets.query.filter_by(user_id = request.json.get("user_id"))
+    planet_to_delete = planet_to_delete.query.filter_by(planet_id = planet_id)
+    db.session.delete(planet_to_delete)
+    db.session.commit()
+
+    return f"Planet deleted from favorites", 201
+
+@app.route("/favorite/people/<int:people_id>", method=["DELETE"])
+def delete_favorite_character(people_id):
+    character_to_delete = Favorite_Characters.query.filter_by(user_id = request.json.get("user_id"))
+    character_to_delete = character_to_delete.query.filter_by(character_id = people_id)
+    db.session.delete(character_to_delete)
+    db.session.commit()
+    
+    return f"Character deleted from favorites", 201
 
 
-@app.route('/user', methods=['GET'])
-def handle_hello():
-
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
-
-    return jsonify(response_body), 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
