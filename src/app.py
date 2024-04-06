@@ -4,8 +4,8 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 import os
 from flask import Flask, request, jsonify, url_for
 from flask_migrate import Migrate
-from flask_swagger import swagger
 from flask_cors import CORS
+from flask_swagger import swagger
 from utils import APIException, generate_sitemap
 from admin import setup_admin
 from models import db, User, Characters, Planets, Favorite_Characters, Favorite_Planets
@@ -36,6 +36,18 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+@app.route("/create-user", methods=["POST"])
+def create_user():
+    new_user = User()
+
+    new_user.name = request.json.get("name")
+    new_user.email = request.json.get("email")
+    new_user.password = request.json.get("password")
+    db.session.add(new_user)
+    db.session.commit()
+
+    return f"User created", 201
+
 @app.route("/people", methods=["GET"])
 def get_all_characters():
     characters = Characters.query.all()
@@ -43,7 +55,7 @@ def get_all_characters():
 
     return jsonify({"characters": characters}), 200
 
-@app.route("people/<int:people_id>")
+@app.route("/people/<int:people_id>")
 def get_single_character(people_id):
     character = Characters.query.filter_by(id=people_id).first()
     if character is not None:
@@ -58,7 +70,7 @@ def get_all_planets():
 
     return jsonify({"planets": planets}), 200
 
-@app.route("planets/<int:planet_id>")
+@app.route("/planets/<int:planet_id>")
 def get_single_planet(planet_id):
     planet = Planets.query.filter_by(id=planet_id).first()
     if planet is not None:
@@ -73,7 +85,7 @@ def get_all_users():
 
     return jsonify({"users": users}), 200 
 
-@app.route("users/favorites", methods=["GET"])
+@app.route("/users/favorites", methods=["GET"])
 def get_user_favorites():
     user_id = request.json.get("user_id")
 
@@ -118,24 +130,21 @@ def add_favorite_character(people_id):
       "status": "ok"}
     ), 201
 
-@app.route("/favorite/planet/<int:planet_id>", method=["DELETE"])
+@app.route("/favorite/planet/<int:planet_id>", methods=["DELETE"])
 def delete_favorite_planet(planet_id):
-    planet_to_delete = Favorite_Planets.query.filter_by(user_id = request.json.get("user_id"))
-    planet_to_delete = planet_to_delete.query.filter_by(planet_id = planet_id)
+    planet_to_delete = Favorite_Planets.query.filter(Favorite_Planets.user_id == request.json.get("user_id"), Favorite_Planets.planet_id == planet_id).first()
     db.session.delete(planet_to_delete)
     db.session.commit()
 
     return f"Planet deleted from favorites", 201
 
-@app.route("/favorite/people/<int:people_id>", method=["DELETE"])
+@app.route("/favorite/people/<int:people_id>", methods=["DELETE"])
 def delete_favorite_character(people_id):
-    character_to_delete = Favorite_Characters.query.filter_by(user_id = request.json.get("user_id"))
-    character_to_delete = character_to_delete.query.filter_by(character_id = people_id)
+    character_to_delete = Favorite_Planets.query.filter(Favorite_Planets.user_id == request.json.get("user_id"), Favorite_Planets.character_id == people_id).first()
     db.session.delete(character_to_delete)
     db.session.commit()
     
     return f"Character deleted from favorites", 201
-
 
 
 # this only runs if `$ python src/app.py` is executed
